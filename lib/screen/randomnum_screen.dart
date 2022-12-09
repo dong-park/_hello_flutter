@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hello_world/component/number_row.dart';
+import 'package:hello_world/screen/setting_screen.dart';
 
 import '../constent/color.dart';
 
@@ -14,6 +16,7 @@ class HomeRandomScreen extends StatefulWidget {
 
 class _HomeRandomScreenState extends State<HomeRandomScreen> {
   var randomNumbers = [123, 456, 789];
+  var maxNumber = 10000;
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +31,9 @@ class _HomeRandomScreenState extends State<HomeRandomScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _Top(),
+              _Top(onPressed: onSettingPressed),
               _Body(randomNumbers: randomNumbers),
-              _Footer(onPressed: onPressed)
+              _Footer(onPressed: onRandomChange)
             ],
           ),
         ),
@@ -38,12 +41,12 @@ class _HomeRandomScreenState extends State<HomeRandomScreen> {
     );
   }
 
-  void onPressed() {
+  void onRandomChange() {
     final random = Random();
     final randomNum = List.generate(3, (idx) {
-      var nextInt = random.nextInt(1000);
-      while (nextInt < 100) {
-        nextInt = random.nextInt(1000);
+      var nextInt = random.nextInt(maxNumber);
+      while (nextInt > maxNumber) {
+        nextInt = random.nextInt(maxNumber);
       }
       return nextInt;
     });
@@ -52,10 +55,26 @@ class _HomeRandomScreenState extends State<HomeRandomScreen> {
       randomNumbers = randomNum;
     });
   }
+
+  void onSettingPressed() async {
+    final pop = await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => SettingsScreen(maxNumber: maxNumber,), fullscreenDialog: true));
+
+    if (pop != null) {
+      setState(() {
+        maxNumber = pop;
+      });
+      onRandomChange();
+    }
+  }
 }
 
 class _Top extends StatelessWidget {
-  const _Top({Key? key}) : super(key: key);
+  VoidCallback onPressed;
+
+  _Top({required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +90,7 @@ class _Top extends StatelessWidget {
           ),
         ),
         IconButton(
-            onPressed: () => {},
+            onPressed: onPressed,
             icon: Icon(
               Icons.settings,
               color: RED_COLOR,
@@ -97,16 +116,7 @@ class _Body extends StatelessWidget {
           .map(
             (e) => Padding(
               padding: EdgeInsets.only(bottom: e.key == 2 ? 0 : 16.0),
-              child: Row(
-                  children: e.value
-                      .toString()
-                      .split('')
-                      .map((e) => Image.asset(
-                            'asset/img/$e.png',
-                            width: 50,
-                            height: 70,
-                          ))
-                      .toList()),
+              child: NumberRow(maxNumber: e.value,)
             ),
           )
           .toList(),
