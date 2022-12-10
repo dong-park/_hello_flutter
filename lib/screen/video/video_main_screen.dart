@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hello_world/screen/video/video_player_screen.dart';
+import 'package:image_picker/image_picker.dart';
 
 class VideoHomeScreen extends StatefulWidget {
   const VideoHomeScreen({Key? key}) : super(key: key);
@@ -11,39 +13,61 @@ class _VideoHomeScreenState extends State<VideoHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF2A3A7C),
-              Color(0xFF000118),
-            ],
-          ),
+      body: renderEmpty(),
+    );
+  }
+
+  Widget renderEmpty() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF2A3A7C),
+            Color(0xFF000118),
+          ],
         ),
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const _Logo(),
-              SizedBox(height: 30),
-              const _AppName()
-            ],
-          ),
+      ),
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _Logo(onTap: onLogoTap),
+            SizedBox(height: 30),
+            _AppName()
+          ],
         ),
       ),
     );
   }
+
+  void onLogoTap() async {
+    final video = await ImagePicker().pickVideo(source: ImageSource.gallery);
+    if (video != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => VideoPlayerScreen(video: video),
+        ),
+      );
+    }
+  }
 }
 
 class _Logo extends StatelessWidget {
-  const _Logo({Key? key}) : super(key: key);
+  final VoidCallback onTap;
+
+  const _Logo({Key? key, required this.onTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset('asset/image/logo.png');
+    return GestureDetector(
+      onTap: onTap,
+      child: Image.asset(
+          'asset/image/logo.png',
+      ),
+    );
   }
 }
 
