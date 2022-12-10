@@ -12,19 +12,39 @@ class NavigatorTestScreen extends StatelessWidget {
     return MainLayout(title: "", routes: [
       ElevatedButton(
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => RouteOneScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => RouteOneScreen(),
+                settings: RouteSettings(
+                  arguments: "one",
+                )),
+          );
         },
         child: Text('Route One'),
       ),
       ElevatedButton(
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => RouteTwoScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => RouteTwoScreen(),
+                settings: RouteSettings(
+                  arguments: "two",
+                )),
+          );
         },
         child: Text('Route Two'),
       ),
       ElevatedButton(
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => RouteThreeScreen()));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => RouteThreeScreen(),
+                  settings: RouteSettings(
+                    arguments: "three",
+                  )));
         },
         child: Text('Route Three'),
       ),
