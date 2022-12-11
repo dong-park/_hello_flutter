@@ -7,8 +7,10 @@ import 'package:video_player/video_player.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final XFile video;
+  final VoidCallback onNewVideoPressed;
 
-  const VideoPlayerScreen({super.key, required this.video});
+  const VideoPlayerScreen(
+      {super.key, required this.video, required this.onNewVideoPressed});
 
   @override
   State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
@@ -16,6 +18,7 @@ class VideoPlayerScreen extends StatefulWidget {
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   final int INIT_MOVE_TIME = 3;
+  bool isControl = false;
 
   VideoPlayerController? videoPlayerController;
   Duration currentPosition = const Duration(seconds: 0);
@@ -24,6 +27,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   void initState() {
     super.initState();
     initializeVideoPlayerController();
+  }
+
+  @override
+  void didUpdateWidget(covariant VideoPlayerScreen oldWidget) {
+    if(widget.video.path != oldWidget.video.path) {
+      currentPosition = Duration();
+      initializeVideoPlayerController();
+    }
   }
 
   void initializeVideoPlayerController() async {
@@ -48,22 +59,30 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
     return AspectRatio(
         aspectRatio: videoPlayerController!.value.aspectRatio,
-        child: Stack(
-          children: [
-            VideoPlayer(videoPlayerController!),
-            _Controls(
-              onReversePressed: onReversePressed,
-              onPlayPressed: onPlayPressed,
-              onForwardPressed: onForwardPressed,
-              isPlay: videoPlayerController!.value.isPlaying,
-            ),
-            _NewVideo(),
-            _Slider(
-              currentPosition: currentPosition,
-              maxPosition: videoPlayerController!.value.duration,
-              onChangeSlider: onChangeSlider,
-            ),
-          ],
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              isControl = !isControl;
+            });
+          },
+          child: Stack(
+            children: [
+              VideoPlayer(videoPlayerController!),
+              if (isControl)
+                _Controls(
+                  onReversePressed: onReversePressed,
+                  onPlayPressed: onPlayPressed,
+                  onForwardPressed: onForwardPressed,
+                  isPlay: videoPlayerController!.value.isPlaying,
+                ),
+              if (isControl) _NewVideo(onNewVideoPressed: widget.onNewVideoPressed,),
+              _Slider(
+                currentPosition: currentPosition,
+                maxPosition: videoPlayerController!.value.duration,
+                onChangeSlider: onChangeSlider,
+              ),
+            ],
+          ),
         ));
   }
 
@@ -157,14 +176,17 @@ class _Controls extends StatelessWidget {
 }
 
 class _NewVideo extends StatelessWidget {
-  const _NewVideo({Key? key}) : super(key: key);
+  final VoidCallback onNewVideoPressed;
+
+  const _NewVideo({Key? key, required this.onNewVideoPressed})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Positioned(
         right: 0,
         child: IconButton(
-            onPressed: () {},
+            onPressed: onNewVideoPressed,
             icon: const IconButton(
               icon: Icon(
                 Icons.photo_camera_back,

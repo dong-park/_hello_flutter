@@ -47,7 +47,7 @@ class _VideoHomeScreenState extends State<VideoHomeScreen> {
 
   Widget renderVideo() {
     return Center(
-      child: VideoPlayerScreen(video: video!)
+      child: VideoPlayerScreen(video: video!, onNewVideoPressed: onLogoTap,)
     );
   }
 
