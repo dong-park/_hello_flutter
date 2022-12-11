@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -14,14 +15,13 @@ class VideoPlayerScreen extends StatefulWidget {
 }
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
-  VideoPlayerController? videoPlayerController;
+  final int INIT_MOVE_TIME = 3;
 
-  final int initMoveTime = 3;
-  bool isPlay = false;
+  VideoPlayerController? videoPlayerController;
+  Duration currentPosition = const Duration(seconds: 0);
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     initializeVideoPlayerController();
   }
@@ -29,6 +29,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   void initializeVideoPlayerController() async {
     videoPlayerController = VideoPlayerController.file(File(widget.video.path));
     await videoPlayerController!.initialize();
+
+    videoPlayerController!.addListener(() {
+      final currentPosition = videoPlayerController!.value.position;
+      setState(() {
+        this.currentPosition = currentPosition;
+      });
+    });
+
     setState(() {});
   }
 
@@ -37,6 +45,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     if (videoPlayerController == null) {
       return const Center(child: CircularProgressIndicator());
     }
+
     return AspectRatio(
         aspectRatio: videoPlayerController!.value.aspectRatio,
         child: Stack(
@@ -46,20 +55,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               onReversePressed: onReversePressed,
               onPlayPressed: onPlayPressed,
               onForwardPressed: onForwardPressed,
-              isPlay: isPlay,
+              isPlay: videoPlayerController!.value.isPlaying,
             ),
-            Positioned(
-                right: 0,
-                child: IconButton(
-                    onPressed: () {},
-                    icon: const IconButton(
-                      icon: Icon(
-                        Icons.photo_camera_back,
-                        color: Colors.white,
-                      ),
-                      onPressed: null,
-                      iconSize: 30.0,
-                    )))
+            _NewVideo(),
+            _Slider(
+              currentPosition: currentPosition,
+              maxPosition: videoPlayerController!.value.duration,
+              onChangeSlider: onChangeSlider,
+            ),
           ],
         ));
   }
@@ -69,25 +72,21 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
     Duration position = const Duration(seconds: 0);
 
-    if (currentPosition.inSeconds > initMoveTime) {
-      position = currentPosition - Duration(seconds: initMoveTime);
+    if (currentPosition.inSeconds > INIT_MOVE_TIME) {
+      position = currentPosition - Duration(seconds: INIT_MOVE_TIME);
     }
 
     videoPlayerController!.seekTo(position);
   }
 
   void onPlayPressed() {
-    // 이미 실행중이면 중지
-    // 실행중이 아니면 실행
     if (videoPlayerController!.value.isPlaying) {
-      videoPlayerController!.pause();
+      videoPlayerController!.pause(); // 이미 실행 중이면 중지
     } else {
-      videoPlayerController!.play();
+      videoPlayerController!.play(); // 실행 중이 아니면 실행
     }
 
-    setState(() {
-      isPlay = videoPlayerController!.value.isPlaying;
-    });
+    setState(() {});
   }
 
   void onForwardPressed() {
@@ -96,11 +95,17 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
     Duration position = maxPosition;
 
-    if(maxPosition > (currentPosition + Duration(seconds: initMoveTime))){
-      position = (currentPosition + Duration(seconds: initMoveTime));
+    if (maxPosition > (currentPosition + Duration(seconds: INIT_MOVE_TIME))) {
+      position = (currentPosition + Duration(seconds: INIT_MOVE_TIME));
     }
 
     videoPlayerController!.seekTo(position);
+  }
+
+  void onChangeSlider(double value) {
+    setState(() {
+      videoPlayerController!.seekTo(Duration(seconds: value.toInt()));
+    });
   }
 }
 
@@ -128,7 +133,9 @@ class _Controls extends StatelessWidget {
         children: [
           renderIconButton(
               icon: Icons.rotate_left, onPressed: onReversePressed),
-          renderIconButton(icon: !isPlay ? Icons.play_arrow : Icons.pause, onPressed: onPlayPressed),
+          renderIconButton(
+              icon: !isPlay ? Icons.play_arrow : Icons.pause,
+              onPressed: onPlayPressed),
           renderIconButton(
               icon: Icons.rotate_right, onPressed: onForwardPressed),
         ],
@@ -146,5 +153,66 @@ class _Controls extends StatelessWidget {
           iconSize: 30,
           color: Colors.white,
         ));
+  }
+}
+
+class _NewVideo extends StatelessWidget {
+  const _NewVideo({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+        right: 0,
+        child: IconButton(
+            onPressed: () {},
+            icon: const IconButton(
+              icon: Icon(
+                Icons.photo_camera_back,
+                color: Colors.white,
+              ),
+              onPressed: null,
+              iconSize: 30.0,
+            )));
+  }
+}
+
+class _Slider extends StatelessWidget {
+  final Duration currentPosition;
+  final Duration maxPosition;
+  final ValueChanged<double> onChangeSlider;
+
+  const _Slider(
+      {Key? key,
+      required this.currentPosition,
+      required this.maxPosition,
+      required this.onChangeSlider})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Row(
+        children: [
+          Text(
+            '${currentPosition.inMinutes.toString().padLeft(2, "0")} : ${currentPosition.inSeconds.toString().padLeft(2, "0")}',
+            style: const TextStyle(color: Colors.white),
+          ),
+          Expanded(
+            child: Slider(
+                value: currentPosition.inSeconds.toDouble(),
+                min: 0,
+                max: maxPosition.inSeconds.toDouble(),
+                onChanged: onChangeSlider),
+          ),
+          Text(
+            '${maxPosition.inMinutes.toString().padLeft(2, "0")} : ${maxPosition.inSeconds.toString().padLeft(2, "0")}',
+            style: const TextStyle(color: Colors.white),
+          ),
+        ],
+      ),
+    );
   }
 }
