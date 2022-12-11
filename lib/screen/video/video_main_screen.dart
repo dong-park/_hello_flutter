@@ -10,10 +10,12 @@ class VideoHomeScreen extends StatefulWidget {
 }
 
 class _VideoHomeScreenState extends State<VideoHomeScreen> {
+  XFile? video;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: renderEmpty(),
+      body: video != null ? renderVideo() : renderEmpty(),
     );
   }
 
@@ -43,14 +45,18 @@ class _VideoHomeScreenState extends State<VideoHomeScreen> {
     );
   }
 
+  Widget renderVideo() {
+    return Center(
+      child: VideoPlayerScreen(video: video!)
+    );
+  }
+
   void onLogoTap() async {
     final video = await ImagePicker().pickVideo(source: ImageSource.gallery);
     if (video != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => VideoPlayerScreen(video: video),
-        ),
-      );
+      setState(() {
+        this.video = video;
+      });
     }
   }
 }
