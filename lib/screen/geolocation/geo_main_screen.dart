@@ -17,22 +17,37 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-              flex: 2, child: GoogleMap(initialCameraPosition: cameraPosition)),
-          Expanded(
-            child: Center(child: Text('출첵')),
-          ),
-        ],
+      body: FutureBuilder(
+        future: checkPermission(),
+        builder: (context, snapshot) {
+          if(snapshot.connectionState == ConnectionState.waiting){
+            return Center(child: CircularProgressIndicator(),);
+          }
+
+          print(snapshot.data);
+
+          if(snapshot.data == "위치 권한이 허용 되었습니다."){
+            return Column(
+              children: [
+                Expanded(
+                    flex: 2, child: GoogleMap(initialCameraPosition: cameraPosition)),
+                Expanded(
+                  child: Center(child: Text('출첵')),
+                ),
+              ],
+            );
+          } else {
+            return Center(child: Text(snapshot.data.toString()),);
+          }
+        },
       ),
     );
   }
 
-  checkPermission() async {
+  Future<String> checkPermission() async {
     bool isLocationServiceEnabled = await Geolocator.isLocationServiceEnabled();
 
-    if (isLocationServiceEnabled) {
+    if (!isLocationServiceEnabled) {
       return "위치 권한을 허용 해주세요.";
     }
 
