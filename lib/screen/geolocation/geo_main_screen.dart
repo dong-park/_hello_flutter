@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class GeoMainScreen extends StatefulWidget {
@@ -26,5 +27,29 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
         ],
       ),
     );
+  }
+
+  checkPermission() async {
+    bool isLocationServiceEnabled = await Geolocator.isLocationServiceEnabled();
+
+    if (isLocationServiceEnabled) {
+      return "위치 권한을 허용 해주세요.";
+    }
+
+    LocationPermission checkedPermission = await Geolocator.checkPermission();
+
+    if (checkedPermission == LocationPermission.denied) {
+      checkedPermission = await Geolocator.requestPermission();
+
+      if (checkedPermission == LocationPermission.denied) {
+        return "위치 권한을 허용 해주세요.";
+      }
+    }
+
+    if (checkedPermission == LocationPermission.deniedForever) {
+      return "위치 권한을 허용 해주세요.";
+    }
+
+    return "위치 권한이 허용 되었습니다.";
   }
 }
