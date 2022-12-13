@@ -13,6 +13,14 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
   static final companyLatLng = LatLng(37.5291, 126.9219);
   CameraPosition cameraPosition =
       CameraPosition(target: companyLatLng, zoom: 15);
+  Circle circle = Circle(
+      circleId: CircleId("1"),
+      center: companyLatLng,
+      fillColor: Colors.blue.withOpacity(0.5),
+      radius: 100,
+      strokeColor: Colors.blue,
+    strokeWidth: 1
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -20,24 +28,25 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
       body: FutureBuilder(
         future: checkPermission(),
         builder: (context, snapshot) {
-          if(snapshot.connectionState == ConnectionState.waiting){
-            return Center(child: CircularProgressIndicator(),);
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
           }
 
-          print(snapshot.data);
-
-          if(snapshot.data == "위치 권한이 허용 되었습니다."){
+          if (snapshot.data == "위치 권한이 허용 되었습니다.") {
             return Column(
               children: [
-                Expanded(
-                    flex: 2, child: GoogleMap(initialCameraPosition: cameraPosition)),
+                _Map(cameraPosition: cameraPosition, circle: circle),
                 Expanded(
                   child: Center(child: Text('출첵')),
                 ),
               ],
             );
           } else {
-            return Center(child: Text(snapshot.data.toString()),);
+            return Center(
+              child: Text(snapshot.data.toString()),
+            );
           }
         },
       ),
@@ -66,5 +75,24 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
     }
 
     return "위치 권한이 허용 되었습니다.";
+  }
+}
+
+class _Map extends StatelessWidget {
+  final CameraPosition cameraPosition;
+  final Circle circle;
+
+  const _Map({Key? key, required this.cameraPosition, required this.circle})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Expanded(
+        flex: 2,
+        child: GoogleMap(
+          initialCameraPosition: cameraPosition,
+          circles: <Circle>{circle},
+        ));
   }
 }
