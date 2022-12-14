@@ -19,7 +19,11 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
       fillColor: Colors.blue.withOpacity(0.5),
       radius: 100,
       strokeColor: Colors.blue,
-    strokeWidth: 1
+      strokeWidth: 1);
+
+  Marker marker = Marker(
+    markerId: MarkerId("1"),
+    position: companyLatLng,
   );
 
   @override
@@ -37,7 +41,11 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
           if (snapshot.data == "위치 권한이 허용 되었습니다.") {
             return Column(
               children: [
-                _Map(cameraPosition: cameraPosition, circle: circle),
+                _Map(
+                  cameraPosition: cameraPosition,
+                  circle: circle,
+                  marker: marker,
+                ),
                 Expanded(
                   child: Center(child: Text('출첵')),
                 ),
@@ -81,18 +89,23 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
 class _Map extends StatelessWidget {
   final CameraPosition cameraPosition;
   final Circle circle;
+  final Marker marker;
 
-  const _Map({Key? key, required this.cameraPosition, required this.circle})
+  const _Map(
+      {Key? key,
+      required this.cameraPosition,
+      required this.circle,
+      required this.marker})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-
     return Expanded(
         flex: 2,
         child: GoogleMap(
           initialCameraPosition: cameraPosition,
           circles: <Circle>{circle},
+          markers: <Marker>{marker},
         ));
   }
 }
