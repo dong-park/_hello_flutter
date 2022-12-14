@@ -13,12 +13,20 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
   static final companyLatLng = LatLng(37.5291, 126.9219);
   CameraPosition cameraPosition =
       CameraPosition(target: companyLatLng, zoom: 15);
-  Circle circle = Circle(
-      circleId: CircleId("1"),
+  Circle withinDistanceCircle = Circle(
+      circleId: CircleId("withinDistanceCircle"),
       center: companyLatLng,
       fillColor: Colors.blue.withOpacity(0.5),
       radius: 100,
       strokeColor: Colors.blue,
+      strokeWidth: 1);
+
+  Circle notWithinDistanceCircle = Circle(
+      circleId: CircleId("notWithinDistanceCircle"),
+      center: companyLatLng,
+      fillColor: Colors.red.withOpacity(0.5),
+      radius: 100,
+      strokeColor: Colors.red,
       strokeWidth: 1);
 
   Marker marker = Marker(
@@ -43,7 +51,7 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
               children: [
                 _Map(
                   cameraPosition: cameraPosition,
-                  circle: circle,
+                  circle: withinDistanceCircle,
                   marker: marker,
                 ),
                 Expanded(
