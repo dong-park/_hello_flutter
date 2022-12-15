@@ -29,10 +29,20 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
       strokeColor: Colors.red,
       strokeWidth: 1);
 
+  Circle chulcheckDoneCircle = Circle(
+      circleId: CircleId("chulcheckDoneCircle"),
+      center: companyLatLng,
+      fillColor: Colors.green.withOpacity(0.5),
+      radius: 100,
+      strokeColor: Colors.green,
+      strokeWidth: 1);
+
   Marker marker = Marker(
     markerId: MarkerId("1"),
     position: companyLatLng,
   );
+
+  bool isChulCheck = false;
 
   @override
   Widget build(BuildContext context) {
@@ -60,32 +70,29 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
                     print(snapshot.data);
                     print(companyLatLng);
 
-                    double between = Geolocator.distanceBetween(
-                        start.latitude,
-                        start.longitude,
-                        end.latitude,
-                        end.longitude
-                    );
+                    double between = Geolocator.distanceBetween(start.latitude,
+                        start.longitude, end.latitude, end.longitude);
 
                     if (between < 100) {
                       isWithinRange = true;
                     }
-
                   }
-
-
 
                   return Column(
                     children: [
                       _Map(
                         cameraPosition: cameraPosition,
-                        circle: isWithinRange
-                            ? withinDistanceCircle
-                            : notWithinDistanceCircle,
+                        circle: isChulCheck
+                            ? chulcheckDoneCircle
+                            : isWithinRange
+                                ? withinDistanceCircle
+                                : notWithinDistanceCircle,
                         marker: marker,
                       ),
-                      Expanded(
-                        child: Center(child: Text('출첵')),
+                      _Chulcheck(
+                        pressedChulCheck: pressedChulCheck,
+                        isChulCheck: isChulCheck,
+                        isWithin: isWithinRange,
                       ),
                     ],
                   );
@@ -123,6 +130,33 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
 
     return "위치 권한이 허용 되었습니다.";
   }
+
+  pressedChulCheck() async {
+    final result = await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('출근하기'),
+            content: Text('출근하실?'),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                  child: Text('출첵')),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                  child: Text('취소')),
+            ],
+          );
+        });
+
+    setState(() {
+      isChulCheck = result;
+    });
+  }
 }
 
 class _Map extends StatelessWidget {
@@ -146,5 +180,33 @@ class _Map extends StatelessWidget {
             circles: <Circle>{circle},
             markers: <Marker>{marker},
             myLocationEnabled: true));
+  }
+}
+
+class _Chulcheck extends StatelessWidget {
+  final VoidCallback pressedChulCheck;
+
+  final bool isChulCheck;
+  final bool isWithin;
+
+  const _Chulcheck(
+      {Key? key, required this.pressedChulCheck, required this.isChulCheck, required this.isWithin})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+        child: Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Icon(
+          Icons.timelapse_outlined,
+          size: 50,
+          color: isChulCheck ? Colors.green : isWithin? Colors.blue : Colors.red,
+        ),
+        if(!isChulCheck && isWithin)
+        TextButton(onPressed: pressedChulCheck, child: Text('출첵하기'))
+      ],
+    ));
   }
 }
