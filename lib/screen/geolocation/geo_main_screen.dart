@@ -47,18 +47,49 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
           }
 
           if (snapshot.data == "위치 권한이 허용 되었습니다.") {
-            return Column(
-              children: [
-                _Map(
-                  cameraPosition: cameraPosition,
-                  circle: withinDistanceCircle,
-                  marker: marker,
-                ),
-                Expanded(
-                  child: Center(child: Text('출첵')),
-                ),
-              ],
-            );
+            return StreamBuilder<Position>(
+                stream: Geolocator.getPositionStream(),
+                builder: (context, snapshot) {
+                  bool isWithinRange = false;
+                  print('why not change');
+
+                  if (snapshot.data != null) {
+                    final start = snapshot.data!;
+                    final end = companyLatLng;
+
+                    print(snapshot.data);
+                    print(companyLatLng);
+
+                    double between = Geolocator.distanceBetween(
+                        start.latitude,
+                        start.longitude,
+                        end.latitude,
+                        end.longitude
+                    );
+
+                    if (between < 100) {
+                      isWithinRange = true;
+                    }
+
+                  }
+
+
+
+                  return Column(
+                    children: [
+                      _Map(
+                        cameraPosition: cameraPosition,
+                        circle: isWithinRange
+                            ? withinDistanceCircle
+                            : notWithinDistanceCircle,
+                        marker: marker,
+                      ),
+                      Expanded(
+                        child: Center(child: Text('출첵')),
+                      ),
+                    ],
+                  );
+                });
           } else {
             return Center(
               child: Text(snapshot.data.toString()),
@@ -111,9 +142,9 @@ class _Map extends StatelessWidget {
     return Expanded(
         flex: 2,
         child: GoogleMap(
-          initialCameraPosition: cameraPosition,
-          circles: <Circle>{circle},
-          markers: <Marker>{marker},
-        ));
+            initialCameraPosition: cameraPosition,
+            circles: <Circle>{circle},
+            markers: <Marker>{marker},
+            myLocationEnabled: true));
   }
 }
