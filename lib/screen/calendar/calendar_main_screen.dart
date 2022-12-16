@@ -11,7 +11,7 @@ class CalendarMainScreen extends StatefulWidget {
 
 class _CalendarMainScreenState extends State<CalendarMainScreen> {
   DateTime? selectedDay;
-  DateTime? focusedDay;
+  DateTime focusedDay = DateTime.now();
 
   final BoxDecoration defaultBoxDecoration = BoxDecoration(
     color: Colors.grey.shade200,
@@ -30,7 +30,8 @@ class _CalendarMainScreenState extends State<CalendarMainScreen> {
         title: const Text('Calendar'),
       ),
       body: TableCalendar(
-        focusedDay: DateTime.now(),
+        locale: 'ko_KR',
+        focusedDay: this.focusedDay,
         firstDay: DateTime.utc(1000),
         lastDay: DateTime.utc(3000),
         headerStyle: HeaderStyle(
@@ -45,12 +46,13 @@ class _CalendarMainScreenState extends State<CalendarMainScreen> {
           selectedDecoration: defaultBoxDecoration.copyWith(border: Border.all(width: 1, color: PRIMARY_COLOR)),
           defaultTextStyle: defaultTextStyle,
           weekendTextStyle: defaultTextStyle,
-          selectedTextStyle: defaultTextStyle.copyWith(color: PRIMARY_COLOR)
+          selectedTextStyle: defaultTextStyle.copyWith(color: PRIMARY_COLOR),
+          outsideDecoration: BoxDecoration(shape: BoxShape.rectangle)
         ),
         onDaySelected: (DateTime selectedDay, DateTime focusedDay) {
           setState(() {
             this.selectedDay = selectedDay;
-            this.focusedDay = focusedDay;
+            this.focusedDay = selectedDay;
           });
         },
         selectedDayPredicate: (day) {
