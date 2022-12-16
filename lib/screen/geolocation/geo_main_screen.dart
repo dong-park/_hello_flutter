@@ -44,6 +44,8 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
 
   bool isChulCheck = false;
 
+  GoogleMapController? mapController;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,14 +63,10 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
                 stream: Geolocator.getPositionStream(),
                 builder: (context, snapshot) {
                   bool isWithinRange = false;
-                  print('why not change');
 
                   if (snapshot.data != null) {
                     final start = snapshot.data!;
                     final end = companyLatLng;
-
-                    print(snapshot.data);
-                    print(companyLatLng);
 
                     double between = Geolocator.distanceBetween(start.latitude,
                         start.longitude, end.latitude, end.longitude);
@@ -80,6 +78,21 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
 
                   return Column(
                     children: [
+                      AppBar(
+                        title: Text(
+                          '오늘도 출근',
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                        backgroundColor: Colors.white,
+                        actions: [
+                          IconButton(
+                              onPressed: onLocationPressed,
+                              icon: Icon(
+                                Icons.my_location,
+                                color: Colors.black,
+                              ))
+                        ],
+                      ),
                       _Map(
                         cameraPosition: cameraPosition,
                         circle: isChulCheck
@@ -88,6 +101,7 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
                                 ? withinDistanceCircle
                                 : notWithinDistanceCircle,
                         marker: marker,
+                        onMapCreated: onMapCreated,
                       ),
                       _Chulcheck(
                         pressedChulCheck: pressedChulCheck,
@@ -157,18 +171,38 @@ class _GeoMainScreenState extends State<GeoMainScreen> {
       isChulCheck = result;
     });
   }
+
+  onLocationPressed() async {
+    if(mapController == null){
+      return;
+    }
+
+    final location = await Geolocator.getCurrentPosition();
+
+    await mapController!.animateCamera(
+      CameraUpdate.newLatLng(
+        LatLng(location.latitude, location.longitude)
+      )
+    );
+  }
+
+  onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+  }
 }
 
 class _Map extends StatelessWidget {
   final CameraPosition cameraPosition;
   final Circle circle;
   final Marker marker;
+  final MapCreatedCallback onMapCreated;
 
   const _Map(
       {Key? key,
       required this.cameraPosition,
       required this.circle,
-      required this.marker})
+      required this.marker,
+      required this.onMapCreated})
       : super(key: key);
 
   @override
@@ -176,10 +210,13 @@ class _Map extends StatelessWidget {
     return Expanded(
         flex: 2,
         child: GoogleMap(
-            initialCameraPosition: cameraPosition,
-            circles: <Circle>{circle},
-            markers: <Marker>{marker},
-            myLocationEnabled: true));
+          initialCameraPosition: cameraPosition,
+          circles: <Circle>{circle},
+          markers: <Marker>{marker},
+          myLocationEnabled: true,
+          myLocationButtonEnabled: true,
+          onMapCreated: onMapCreated,
+        ));
   }
 }
 
@@ -190,7 +227,10 @@ class _Chulcheck extends StatelessWidget {
   final bool isWithin;
 
   const _Chulcheck(
-      {Key? key, required this.pressedChulCheck, required this.isChulCheck, required this.isWithin})
+      {Key? key,
+      required this.pressedChulCheck,
+      required this.isChulCheck,
+      required this.isWithin})
       : super(key: key);
 
   @override
@@ -202,10 +242,14 @@ class _Chulcheck extends StatelessWidget {
         Icon(
           Icons.timelapse_outlined,
           size: 50,
-          color: isChulCheck ? Colors.green : isWithin? Colors.blue : Colors.red,
+          color: isChulCheck
+              ? Colors.green
+              : isWithin
+                  ? Colors.blue
+                  : Colors.red,
         ),
-        if(!isChulCheck && isWithin)
-        TextButton(onPressed: pressedChulCheck, child: Text('출첵하기'))
+        if (!isChulCheck && isWithin)
+          TextButton(onPressed: pressedChulCheck, child: Text('출첵하기'))
       ],
     ));
   }
