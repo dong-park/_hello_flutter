@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hello_world/layout/main_layout.dart';
-import 'package:hello_world/screen/route_three_screen.dart';
-import 'package:hello_world/screen/route_two_screen.dart';
+import 'package:hello_world/screen/basic/route_three_screen.dart';
+import 'package:hello_world/screen/basic/route_two_screen.dart';
+
 
 class NavigatorTestScreen extends StatelessWidget {
   const NavigatorTestScreen({super.key});

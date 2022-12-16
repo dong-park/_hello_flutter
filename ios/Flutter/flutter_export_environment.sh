@@ -3,7 +3,7 @@
 export "FLUTTER_ROOT=/Users/dongpark/lib/flutter"
 export "FLUTTER_APPLICATION_PATH=/Users/dongpark/git/flutter-helloworld"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
-export "FLUTTER_TARGET=/Users/dongpark/git/flutter-helloworld/lib/screen/agora/agora_main.dart"
+export "FLUTTER_TARGET=/Users/dongpark/git/flutter-helloworld/lib/screen/calendar/calendar_main.dart"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=1.0.0"
 export "FLUTTER_BUILD_NUMBER=1"

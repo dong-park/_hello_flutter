@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hello_world/component/number_row.dart';
-import 'package:hello_world/screen/setting_screen.dart';
+import 'package:hello_world/screen/basic/setting_screen.dart';
 
-import '../constent/color.dart';
+import '../../constent/color.dart';
 
 class HomeRandomScreen extends StatefulWidget {
   const HomeRandomScreen({Key? key}) : super(key: key);

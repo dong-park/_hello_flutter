@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../layout/main_layout.dart';
+import '../../layout/main_layout.dart';
 
 class RouteTwoScreen extends StatelessWidget {
   const RouteTwoScreen({Key? key}) : super(key: key);
@@ -10,7 +10,8 @@ class RouteTwoScreen extends StatelessWidget {
     return MainLayout(title: "routeTwo", routes: [
       ElevatedButton(
         onPressed: () {
-          Navigator.of(context).pushReplacement( // 이전에 있던 화면을 지우고 새로운 화면을 띄운다.
+          Navigator.of(context).pushReplacement(
+            // 이전에 있던 화면을 지우고 새로운 화면을 띄운다.
             MaterialPageRoute(
               builder: (context) => RouteTwoScreen(),
               settings: RouteSettings(
@@ -23,7 +24,8 @@ class RouteTwoScreen extends StatelessWidget {
       ),
       ElevatedButton(
         onPressed: () {
-          Navigator.of(context).pushAndRemoveUntil( // 이전에 있던 화면을 지우고 새로운 화면을 띄운다.
+          Navigator.of(context).pushAndRemoveUntil(
+            // 이전에 있던 화면을 지우고 새로운 화면을 띄운다.
             MaterialPageRoute(
               builder: (context) => RouteTwoScreen(),
               settings: RouteSettings(
