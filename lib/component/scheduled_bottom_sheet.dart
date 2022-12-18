@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hello_world/constent/color.dart';
 
-class ScheduledBottomSheet extends StatelessWidget {
+class ScheduledBottomSheet extends StatefulWidget {
   const ScheduledBottomSheet({Key? key}) : super(key: key);
+
+  @override
+  State<ScheduledBottomSheet> createState() => _ScheduledBottomSheetState();
+}
+
+class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -11,37 +18,83 @@ class ScheduledBottomSheet extends StatelessWidget {
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.5 + bottomInset,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(15, 15, 15, 15 + bottomInset),
-        child:
-            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Row(
-            children: [
-              Expanded(child: CustomTextField(isTime: true, label: '시작시간')),
-              SizedBox(
-                width: 16,
-              ),
-              Expanded(child: CustomTextField(isTime: true, label: '마감시간')),
-            ],
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          Expanded(child: CustomTextField(isTime: false, label: '내용')),
-          SizedBox(
-            height: 10,
-          ),
-          _ColorPicker(),
-          SizedBox(
-            height: 10,
-          ),
-          ElevatedButton(
-            onPressed: () {},
-            child: Text('저장'),
-            style: ElevatedButton.styleFrom(backgroundColor: PRIMARY_COLOR),
-          )
-        ]),
+      child: Form(
+        key: _formKey,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(15, 15, 15, 15 + bottomInset),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            _Date(),
+            _Blank(),
+            _Content(),
+            _Blank(),
+            _ColorPicker(),
+            _Blank(),
+            _Save(onPressSaveButton: onPressSaveButton,),
+          ]),
+        ),
       ),
+    );
+  }
+
+  onPressSaveButton() {
+    if (_formKey == null) {
+      return;
+    }
+    if (_formKey.currentState!.validate()) {
+      print('save');
+    }
+  }
+}
+
+class _Blank extends StatelessWidget {
+  const _Blank({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 10,
+    );
+  }
+}
+
+class _Date extends StatelessWidget {
+  const _Date({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: CustomTextField(isTime: true, label: '시작시간')),
+        SizedBox(
+          width: 16,
+        ),
+        Expanded(child: CustomTextField(isTime: true, label: '마감시간')),
+      ],
+    );
+  }
+}
+
+class _Content extends StatelessWidget {
+  const _Content({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(child: CustomTextField(isTime: false, label: '내용'));
+  }
+}
+
+class _Save extends StatelessWidget {
+  final VoidCallback onPressSaveButton;
+
+  const _Save({Key? key, required this.onPressSaveButton}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressSaveButton,
+      child: Text('저장'),
+      style: ElevatedButton.styleFrom(backgroundColor: PRIMARY_COLOR),
     );
   }
 }
@@ -81,7 +134,13 @@ class _RenderingTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return '내용을 입력해주세요';
+        }
+        return null;
+      },
       keyboardType: isTime ? TextInputType.number : TextInputType.multiline,
       cursorColor: Colors.grey[300],
       inputFormatters: isTime ? [FilteringTextInputFormatter.digitsOnly] : [],
