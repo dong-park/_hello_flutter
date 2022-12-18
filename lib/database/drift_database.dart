@@ -11,8 +11,13 @@ import '../model/schedule.dart';
 part 'drift_database.g.dart';
 
 @DriftDatabase(tables: [Schedules, CategoryColors])
-class LocalDatabase extends _$DriftDatabase {
+class LocalDatabase extends _$LocalDatabase {
   LocalDatabase() : super(_openConnection());
+
+  createSchedule(SchedulesCompanion schedule) => into(schedules).insert(schedule);
+  createCategoryColor(CategoryColorsCompanion categoryColor) => into(categoryColors).insert(categoryColor);
+  getAllSchedules() => select(schedules).get();
+  getAllCategoryColors() => select(categoryColors).get();
 
   @override
   int get schemaVersion => 1;
