@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hello_world/constent/color.dart';
 
 class ScheduledBottomSheet extends StatelessWidget {
@@ -16,21 +17,24 @@ class ScheduledBottomSheet extends StatelessWidget {
             Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Row(
             children: [
-              Expanded(child: CustomTextField(label: '시작시간')),
+              Expanded(child: CustomTextField(isTime: true, label: '시작시간')),
               SizedBox(
                 width: 16,
               ),
-              Expanded(child: CustomTextField(label: '마감시간')),
+              Expanded(child: CustomTextField(isTime: true, label: '마감시간')),
             ],
           ),
           SizedBox(
             height: 10,
           ),
-          CustomTextField(label: '내용'),
+          Expanded(child: CustomTextField(isTime: false, label: '내용')),
           SizedBox(
             height: 10,
           ),
-          _ColorPicker(),SizedBox(height: 10,),
+          _ColorPicker(),
+          SizedBox(
+            height: 10,
+          ),
           ElevatedButton(
             onPressed: () {},
             child: Text('저장'),
@@ -44,8 +48,10 @@ class ScheduledBottomSheet extends StatelessWidget {
 
 class CustomTextField extends StatelessWidget {
   final String label;
+  final bool isTime;
 
-  const CustomTextField({Key? key, required this.label}) : super(key: key);
+  const CustomTextField({Key? key, required this.label, required this.isTime})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -56,12 +62,35 @@ class CustomTextField extends StatelessWidget {
           label,
           style: TextStyle(color: PRIMARY_COLOR, fontWeight: FontWeight.w500),
         ),
-        TextField(
-          cursorColor: Colors.grey,
-          decoration: InputDecoration(
-              border: InputBorder.none, fillColor: Colors.grey, filled: true),
-        ),
+        if (isTime)
+          _RenderingTextField(isTime: isTime)
+        else
+          Expanded(
+              child: _RenderingTextField(
+            isTime: isTime,
+          )),
       ],
+    );
+  }
+}
+
+class _RenderingTextField extends StatelessWidget {
+  final bool isTime;
+
+  const _RenderingTextField({Key? key, required this.isTime}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      keyboardType: isTime ? TextInputType.number : TextInputType.multiline,
+      cursorColor: Colors.grey[300],
+      inputFormatters: isTime ? [FilteringTextInputFormatter.digitsOnly] : [],
+      maxLines: isTime ? 1 : null,
+      expands: isTime ? false : true,
+      decoration: InputDecoration(
+          border: InputBorder.none,
+          fillColor: Colors.grey.shade300,
+          filled: true),
     );
   }
 }
