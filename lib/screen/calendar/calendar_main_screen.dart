@@ -32,7 +32,15 @@ class _CalendarMainScreenState extends State<CalendarMainScreen> {
             SizedBox(
               height: 14,
             ),
-            _ScheduledCard()
+            Expanded(
+                child: ListView.separated(
+                    itemCount: 10,
+                    separatorBuilder: (context, index) => SizedBox(
+                          height: 16,
+                        ),
+                    itemBuilder: (context, index) {
+                      return _ScheduledCard();
+                    }))
           ],
         ),
       ),
@@ -145,7 +153,7 @@ class _ScheduledCard extends StatelessWidget {
 
   String agenda = '프로그래밍 공부하기';
 
-  var cateogryColor = Colors.red;
+  var categoryColor = Colors.red;
 
   _ScheduledCard({Key? key}) : super(key: key);
 
@@ -176,14 +184,18 @@ class _ScheduledCard extends StatelessWidget {
                 ],
               ),
               Expanded(
-                child:
-                    Padding(padding: EdgeInsets.symmetric(horizontal: 15, vertical: 2), child: Text(agenda, style: TextStyle(fontSize: 15.5),)),
+                child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 2),
+                    child: Text(
+                      agenda,
+                      style: TextStyle(fontSize: 15.5),
+                    )),
               ),
               Container(
                 width: 16,
                 height: 16,
                 decoration:
-                    BoxDecoration(color: cateogryColor, shape: BoxShape.circle),
+                    BoxDecoration(color: categoryColor, shape: BoxShape.circle),
               )
             ],
           ),
