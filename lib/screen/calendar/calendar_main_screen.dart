@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hello_world/component/scheduled_bottom_sheet.dart';
 import 'package:hello_world/constent/color.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -20,8 +21,20 @@ class _CalendarMainScreenState extends State<CalendarMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return SafeArea(
       child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (context) {
+                    return ScheduledBottomSheet();
+                  });
+            },
+            backgroundColor: PRIMARY_COLOR,
+            child: Icon(Icons.add)),
         body: Column(
           children: [
             _Calendar(
@@ -40,7 +53,7 @@ class _CalendarMainScreenState extends State<CalendarMainScreen> {
                         ),
                     itemBuilder: (context, index) {
                       return _ScheduledCard();
-                    }))
+                    })),
           ],
         ),
       ),
