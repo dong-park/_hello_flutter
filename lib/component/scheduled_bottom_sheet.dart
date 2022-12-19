@@ -20,6 +20,7 @@ class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
       height: MediaQuery.of(context).size.height * 0.5 + bottomInset,
       child: Form(
         key: _formKey,
+        autovalidateMode: AutovalidateMode.always,
         child: Padding(
           padding: EdgeInsets.fromLTRB(15, 15, 15, 15 + bottomInset),
           child:
@@ -30,7 +31,9 @@ class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
             _Blank(),
             _ColorPicker(),
             _Blank(),
-            _Save(onPressSaveButton: onPressSaveButton,),
+            _Save(
+              onPressSaveButton: onPressSaveButton,
+            ),
           ]),
         ),
       ),
@@ -42,7 +45,7 @@ class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
       return;
     }
     if (_formKey.currentState!.validate()) {
-      print('save');
+
     }
   }
 }
@@ -139,6 +142,14 @@ class _RenderingTextField extends StatelessWidget {
         if (value == null || value.isEmpty) {
           return '내용을 입력해주세요';
         }
+
+        if (isTime) {
+          int time = int.parse(value);
+          if (!(time < 24 && 0 < time)) {
+            return '24시간 형식으로 입력해주세요';
+          }
+        }
+
         return null;
       },
       keyboardType: isTime ? TextInputType.number : TextInputType.multiline,

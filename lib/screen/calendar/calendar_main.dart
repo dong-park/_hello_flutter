@@ -4,7 +4,7 @@ import 'calendar_main_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:hello_world/database/drift_database.dart';
 
-final DEFAULT_COLORS = [
+final defaultColor = [
   //빨강
   'F44336',
   //분홍
@@ -28,7 +28,7 @@ void main() async {
 
   database.getAllCategoryColors().then((value) {
     if (value.isEmpty) {
-      for(String color in DEFAULT_COLORS) {
+      for(String color in defaultColor) {
         database.createCategoryColor(CategoryColorsCompanion.insert(color: color));
       }
       print('database created');
