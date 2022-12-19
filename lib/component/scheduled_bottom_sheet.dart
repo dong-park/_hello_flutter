@@ -12,6 +12,10 @@ class ScheduledBottomSheet extends StatefulWidget {
 class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  String? content;
+  String? start;
+  String? end;
+
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
@@ -25,9 +29,20 @@ class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
           padding: EdgeInsets.fromLTRB(15, 15, 15, 15 + bottomInset),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            _Date(),
+            _Date(
+              startSetter: (val) => setState(() {
+                start = val;
+              }),
+              endSetter: (val) => setState(() {
+                end = val;
+              }),
+            ),
             _Blank(),
-            _Content(),
+            _Content(
+              contentSetter: (val) => setState(() {
+                content = val;
+              }),
+            ),
             _Blank(),
             _ColorPicker(),
             _Blank(),
@@ -45,7 +60,7 @@ class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
       return;
     }
     if (_formKey.currentState!.validate()) {
-
+      _formKey.currentState!.save();
     }
   }
 }
@@ -62,28 +77,49 @@ class _Blank extends StatelessWidget {
 }
 
 class _Date extends StatelessWidget {
-  const _Date({Key? key}) : super(key: key);
+  final FormFieldSetter<String> startSetter;
+  final FormFieldSetter<String> endSetter;
+
+  const _Date({Key? key, required this.startSetter, required this.endSetter})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: CustomTextField(isTime: true, label: '시작시간')),
+        Expanded(
+            child: CustomTextField(
+          isTime: true,
+          label: '시작시간',
+          onSaved: startSetter,
+        )),
         SizedBox(
           width: 16,
         ),
-        Expanded(child: CustomTextField(isTime: true, label: '마감시간')),
+        Expanded(
+            child: CustomTextField(
+          isTime: true,
+          label: '마감시간',
+          onSaved: endSetter,
+        )),
       ],
     );
   }
 }
 
 class _Content extends StatelessWidget {
-  const _Content({Key? key}) : super(key: key);
+  final FormFieldSetter<String> contentSetter;
+
+  const _Content({Key? key, required this.contentSetter}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(child: CustomTextField(isTime: false, label: '내용'));
+    return Expanded(
+        child: CustomTextField(
+      isTime: false,
+      label: '내용',
+      onSaved: contentSetter,
+    ));
   }
 }
 
@@ -106,7 +142,13 @@ class CustomTextField extends StatelessWidget {
   final String label;
   final bool isTime;
 
-  const CustomTextField({Key? key, required this.label, required this.isTime})
+  final FormFieldSetter<String> onSaved;
+
+  const CustomTextField(
+      {Key? key,
+      required this.label,
+      required this.isTime,
+      required this.onSaved})
       : super(key: key);
 
   @override
@@ -119,11 +161,15 @@ class CustomTextField extends StatelessWidget {
           style: TextStyle(color: PRIMARY_COLOR, fontWeight: FontWeight.w500),
         ),
         if (isTime)
-          _RenderingTextField(isTime: isTime)
+          _RenderingTextField(
+            isTime: isTime,
+            onSaved: onSaved,
+          )
         else
           Expanded(
               child: _RenderingTextField(
             isTime: isTime,
+            onSaved: onSaved,
           )),
       ],
     );
@@ -132,8 +178,11 @@ class CustomTextField extends StatelessWidget {
 
 class _RenderingTextField extends StatelessWidget {
   final bool isTime;
+  final FormFieldSetter<String> onSaved;
 
-  const _RenderingTextField({Key? key, required this.isTime}) : super(key: key);
+  const _RenderingTextField(
+      {Key? key, required this.isTime, required this.onSaved})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -152,6 +201,7 @@ class _RenderingTextField extends StatelessWidget {
 
         return null;
       },
+      onSaved: onSaved,
       keyboardType: isTime ? TextInputType.number : TextInputType.multiline,
       cursorColor: Colors.grey[300],
       inputFormatters: isTime ? [FilteringTextInputFormatter.digitsOnly] : [],
