@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get_it/get_it.dart';
 import 'package:hello_world/constent/color.dart';
+import 'package:hello_world/database/drift_database.dart';
 
 class ScheduledBottomSheet extends StatefulWidget {
   const ScheduledBottomSheet({Key? key}) : super(key: key);
@@ -221,21 +223,20 @@ class _ColorPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Wrap(
-        alignment: WrapAlignment.start,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 5,
-        children: [
-          _ColorPickerItem(color: Colors.red),
-          _ColorPickerItem(color: Colors.blue),
-          _ColorPickerItem(color: Colors.green),
-          _ColorPickerItem(color: Colors.yellow),
-          _ColorPickerItem(color: Colors.purple),
-          _ColorPickerItem(color: Colors.orange),
-          _ColorPickerItem(color: Colors.pink),
-          _ColorPickerItem(color: Colors.brown),
-          _ColorPickerItem(color: Colors.black),
-        ],
+      child: FutureBuilder<List<CategoryColor>>(
+        future: GetIt.I<LocalDatabase>().getAllCategoryColors(),
+        builder: (context, snapshot) {
+          if(snapshot.hasData){
+            return Wrap(
+                alignment: WrapAlignment.start,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 5,
+                children: snapshot.data!.map((e) => _ColorPickerItem(color: Color(int.parse('FF${e.color}', radix: 16)))).toList(),);
+          } else {
+            return Container();
+            // return CircularProgressIndicator();
+          }
+        },
       ),
     );
   }
