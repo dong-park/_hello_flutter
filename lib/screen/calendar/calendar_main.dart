@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:hello_world/database/drift_database.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'calendar_main_screen.dart';
-import 'package:intl/date_symbol_data_local.dart';
-import 'package:hello_world/database/drift_database.dart';
 
 final defaultColor = [
   //빨강
@@ -25,6 +26,8 @@ void main() async {
   await initializeDateFormatting();
 
   final database = LocalDatabase();
+
+  GetIt.I.registerSingleton<LocalDatabase>(database);
 
   database.getAllCategoryColors().then((value) {
     if (value.isEmpty) {
