@@ -17,6 +17,7 @@ class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
   String? content;
   String? start;
   String? end;
+  String? selectedId;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +47,7 @@ class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
               }),
             ),
             _Blank(),
-            _ColorPicker(),
+            renderColorPicker(),
             _Blank(),
             _Save(
               onPressSaveButton: onPressSaveButton,
@@ -64,6 +65,35 @@ class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
     }
+  }
+
+  Widget renderColorPicker() {
+    return FutureBuilder<List<CategoryColor>>(
+      future: GetIt.I<LocalDatabase>().getAllCategoryColors(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return Wrap(
+            alignment: WrapAlignment.start,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 5,
+            children: snapshot.data!
+                .map((e) => _ColorPickerItem(
+                      color: Color(int.parse('FF${e.color}', radix: 16)),
+                      isSelected: selectedId == e.color,
+                      onTab: () {
+                        setState(() {
+                          this.selectedId = e.color;
+                        });
+                      },
+                    ))
+                .toList(),
+          );
+        } else {
+          return Container();
+          // return CircularProgressIndicator();
+        }
+      },
+    );
   }
 }
 
@@ -217,42 +247,33 @@ class _RenderingTextField extends StatelessWidget {
   }
 }
 
-class _ColorPicker extends StatelessWidget {
-  const _ColorPicker({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: FutureBuilder<List<CategoryColor>>(
-        future: GetIt.I<LocalDatabase>().getAllCategoryColors(),
-        builder: (context, snapshot) {
-          if(snapshot.hasData){
-            return Wrap(
-                alignment: WrapAlignment.start,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 5,
-                children: snapshot.data!.map((e) => _ColorPickerItem(color: Color(int.parse('FF${e.color}', radix: 16)))).toList(),);
-          } else {
-            return Container();
-            // return CircularProgressIndicator();
-          }
-        },
-      ),
-    );
-  }
-}
-
 class _ColorPickerItem extends StatelessWidget {
   final Color color;
+  final bool isSelected;
+  final BoxDecoration boxDecoration = BoxDecoration(
+    shape: BoxShape.circle,
+    border: Border.all(color: Colors.grey.shade300),
+  );
+  final VoidCallback onTab;
 
-  const _ColorPickerItem({Key? key, required this.color}) : super(key: key);
+  _ColorPickerItem({
+    Key? key,
+    required this.color,
+    required this.isSelected,
+    required this.onTab,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 25,
-      height: 25,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+    return GestureDetector(
+      onTap: onTab,
+      child: Container(
+          width: 25,
+          height: 25,
+          decoration: isSelected
+              ? boxDecoration.copyWith(
+                  color: color, border: Border.all(color: Colors.black, width: 3))
+              : boxDecoration.copyWith(color: color)),
     );
   }
 }
