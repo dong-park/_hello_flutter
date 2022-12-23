@@ -71,6 +71,9 @@ class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
     return FutureBuilder<List<CategoryColor>>(
       future: GetIt.I<LocalDatabase>().getAllCategoryColors(),
       builder: (context, snapshot) {
+        if(this.selectedId == null) {
+          this.selectedId = snapshot.data![0].color;
+        }
         if (snapshot.hasData) {
           return Wrap(
             alignment: WrapAlignment.start,
