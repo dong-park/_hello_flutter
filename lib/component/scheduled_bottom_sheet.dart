@@ -1,11 +1,18 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hello_world/constent/color.dart';
 import 'package:hello_world/database/drift_database.dart';
 
+import '../model/schedule_with_color.dart';
+
 class ScheduledBottomSheet extends StatefulWidget {
-  const ScheduledBottomSheet({Key? key}) : super(key: key);
+  final DateTime selectedDay;
+  final ScheduleWithColor? scheduleWithColor;
+
+  const ScheduledBottomSheet({Key? key, required this.selectedDay, this.scheduleWithColor})
+      : super(key: key);
 
   @override
   State<ScheduledBottomSheet> createState() => _ScheduledBottomSheetState();
@@ -33,6 +40,8 @@ class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             _Date(
+              startTime: widget.scheduleWithColor?.schedule.startTime?.toString() ?? '',
+              endTime: widget.scheduleWithColor?.schedule.endTime?.toString() ?? '',
               startSetter: (val) => setState(() {
                 start = val;
               }),
@@ -42,6 +51,7 @@ class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
             ),
             _Blank(),
             _Content(
+              content: widget.scheduleWithColor?.schedule.content ?? '',
               contentSetter: (val) => setState(() {
                 content = val;
               }),
@@ -58,12 +68,38 @@ class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
     );
   }
 
-  onPressSaveButton() {
+  onPressSaveButton() async {
     if (_formKey == null) {
       return;
     }
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+
+      DateTime startTime = DateTime(
+        widget.selectedDay.year,
+        widget.selectedDay.month,
+        widget.selectedDay.day,
+        int.parse(start!),
+      );
+      DateTime endTime = DateTime(
+        widget.selectedDay.year,
+        widget.selectedDay.month,
+        widget.selectedDay.day,
+        int.parse(end!),
+      );
+
+      Future<int> key = GetIt.I<LocalDatabase>().createSchedule(
+        SchedulesCompanion(
+          content: Value(content!),
+          startTime: Value(startTime),
+          endTime: Value(endTime),
+          colorId: Value(selectedId),
+          date: Value(DateTime(widget.selectedDay.year,
+              widget.selectedDay.month, widget.selectedDay.day)),
+        ),
+      );
+
+      Navigator.pop(context);
     }
   }
 
@@ -71,7 +107,7 @@ class _ScheduledBottomSheetState extends State<ScheduledBottomSheet> {
     return FutureBuilder<List<CategoryColor>>(
       future: GetIt.I<LocalDatabase>().getAllCategoryColors(),
       builder: (context, snapshot) {
-        if(this.selectedId == null) {
+        if (this.selectedId == null) {
           this.selectedId = snapshot.data![0].color;
         }
         if (snapshot.hasData) {
@@ -114,8 +150,10 @@ class _Blank extends StatelessWidget {
 class _Date extends StatelessWidget {
   final FormFieldSetter<String> startSetter;
   final FormFieldSetter<String> endSetter;
+  final String? startTime;
+  final String? endTime;
 
-  const _Date({Key? key, required this.startSetter, required this.endSetter})
+  const _Date({Key? key, required this.startSetter, required this.endSetter, this.startTime, this.endTime })
       : super(key: key);
 
   @override
@@ -144,8 +182,9 @@ class _Date extends StatelessWidget {
 
 class _Content extends StatelessWidget {
   final FormFieldSetter<String> contentSetter;
+  final String? content;
 
-  const _Content({Key? key, required this.contentSetter}) : super(key: key);
+  const _Content({Key? key, required this.contentSetter, this.content}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +215,7 @@ class _Save extends StatelessWidget {
 class CustomTextField extends StatelessWidget {
   final String label;
   final bool isTime;
+  final String? initialValue;
 
   final FormFieldSetter<String> onSaved;
 
@@ -183,7 +223,7 @@ class CustomTextField extends StatelessWidget {
       {Key? key,
       required this.label,
       required this.isTime,
-      required this.onSaved})
+      required this.onSaved, this.initialValue})
       : super(key: key);
 
   @override
@@ -275,7 +315,8 @@ class _ColorPickerItem extends StatelessWidget {
           height: 25,
           decoration: isSelected
               ? boxDecoration.copyWith(
-                  color: color, border: Border.all(color: Colors.black, width: 3))
+                  color: color,
+                  border: Border.all(color: Colors.black, width: 3))
               : boxDecoration.copyWith(color: color)),
     );
   }

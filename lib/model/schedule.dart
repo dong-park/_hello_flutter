@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
 
+import 'category_color.dart';
+
 class Schedules extends Table {
 
   //pk
@@ -18,7 +20,7 @@ class Schedules extends Table {
   DateTimeColumn get endTime => dateTime()();
 
   //카테고리컬러id
-  IntColumn get colorId => integer()();
+  TextColumn get colorId => text().nullable().references(CategoryColors, #color)();
 
   //생성날짜
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();

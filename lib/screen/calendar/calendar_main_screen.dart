@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:hello_world/component/scheduled_bottom_sheet.dart';
 import 'package:hello_world/constent/color.dart';
+import 'package:hello_world/database/drift_database.dart';
+import 'package:hello_world/model/schedule_with_color.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CalendarMainScreen extends StatefulWidget {
@@ -11,7 +14,7 @@ class CalendarMainScreen extends StatefulWidget {
 }
 
 class _CalendarMainScreenState extends State<CalendarMainScreen> {
-  DateTime selectedDay = DateTime(
+  DateTime selectedDay = DateTime.utc(
     DateTime.now().year,
     DateTime.now().month,
     DateTime.now().day,
@@ -21,7 +24,6 @@ class _CalendarMainScreenState extends State<CalendarMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return SafeArea(
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
@@ -30,7 +32,9 @@ class _CalendarMainScreenState extends State<CalendarMainScreen> {
                   context: context,
                   isScrollControlled: true,
                   builder: (context) {
-                    return ScheduledBottomSheet();
+                    return ScheduledBottomSheet(
+                      selectedDay: selectedDay,
+                    );
                   });
             },
             backgroundColor: PRIMARY_COLOR,
@@ -46,14 +50,51 @@ class _CalendarMainScreenState extends State<CalendarMainScreen> {
               height: 14,
             ),
             Expanded(
-                child: ListView.separated(
-                    itemCount: 10,
-                    separatorBuilder: (context, index) => SizedBox(
-                          height: 16,
+                child: StreamBuilder<List<ScheduleWithColor>>(
+              stream: GetIt.I
+                  .get<LocalDatabase>()
+                  .watchSelectedSchedule(selectedDay),
+              builder: (context, snapshot) => ListView.separated(
+                  itemCount: snapshot.data?.length ?? 0,
+                  separatorBuilder: (context, index) => const SizedBox(
+                        height: 16,
+                      ),
+                  itemBuilder: (context, index) {
+                    return Dismissible(
+                      key: Key(index.toString()),
+                      direction: DismissDirection.endToStart,
+                      onDismissed: (direction) {
+                        // alert dialog
+                        GetIt.I
+                            .get<LocalDatabase>()
+                            .deleteSchedule(
+                            snapshot.data![index].schedule);
+                      },
+                      child: GestureDetector(
+                        onTap: () {
+                          showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (context) {
+                                return ScheduledBottomSheet(
+                                  selectedDay: selectedDay,
+                                  scheduleWithColor: snapshot.data![index],
+                                );
+                              });
+                        },
+                        child: _ScheduledCard(
+                          startDate: snapshot.data![index].schedule.startTime,
+                          endDate: snapshot.data![index].schedule.endTime,
+                          agenda: snapshot.data![index].schedule.content,
+                          categoryColor: Color(int.parse(
+                              'FF${snapshot.data![index].color.color}',
+                              radix: 16)),
+                          // color: snapshot.data![index].color,
                         ),
-                    itemBuilder: (context, index) {
-                      return _ScheduledCard();
-                    })),
+                      ),
+                    );
+                  }),
+            )),
           ],
         ),
       ),
@@ -65,6 +106,10 @@ class _CalendarMainScreenState extends State<CalendarMainScreen> {
       this.selectedDay = selectedDay;
       this.focusedDay = selectedDay;
     });
+  }
+
+  colorIdToHex(int colorId) {
+    return colorId.toRadixString(16);
   }
 }
 
@@ -78,7 +123,6 @@ class _Calendar extends StatelessWidget {
       required this.selectedDay,
       required this.onDaySelected})
       : super(key: key);
-
   BoxDecoration defaultBoxDecoration = BoxDecoration(
     color: Colors.grey.shade200,
     borderRadius: BorderRadius.circular(6.0),
@@ -159,16 +203,21 @@ class _Banner extends StatelessWidget {
 }
 
 class _ScheduledCard extends StatelessWidget {
-  var startDate = DateTime.now();
-  var endDate = DateTime.now();
+  final DateTime startDate;
+  final DateTime endDate;
+  final Color categoryColor;
+  final String agenda;
+
   TextStyle textStyle =
       TextStyle(color: PRIMARY_COLOR, fontWeight: FontWeight.w500);
 
-  String agenda = '프로그래밍 공부하기';
-
-  var categoryColor = Colors.red;
-
-  _ScheduledCard({Key? key}) : super(key: key);
+  _ScheduledCard(
+      {Key? key,
+      required this.startDate,
+      required this.endDate,
+      required this.agenda,
+      required this.categoryColor})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +240,7 @@ class _ScheduledCard extends StatelessWidget {
                     style: textStyle.copyWith(fontSize: 20),
                   ),
                   Text(
-                    "${startDate.hour.toString().padLeft(2, "0")}:${startDate.minute.toString().padLeft(2, "0")}",
+                    "${endDate.hour.toString().padLeft(2, "0")}:${endDate.minute.toString().padLeft(2, "0")}",
                     style: textStyle.copyWith(fontSize: 14),
                   ),
                 ],
